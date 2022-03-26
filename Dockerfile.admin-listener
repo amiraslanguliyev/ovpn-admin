@@ -1,0 +1,7 @@
+FROM nginx:stable-alpine
+
+#COPY proxy.conf /etc/nginx/conf.d/
+
+RUN sed -i 's/user  nginx;/user  root;/' /etc/nginx/nginx.conf
+
+EXPOSE 2376

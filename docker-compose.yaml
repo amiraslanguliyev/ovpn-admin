@@ -8,13 +8,15 @@ services:
     image: openvpn:local
     command: /etc/openvpn/setup/configure.sh
     environment:
-      OVPN_SERVER_NET: "192.168.100.0"
+      OVPN_SERVER_NET: "10.28.21.0"
       OVPN_SERVER_MASK: "255.255.255.0"
+      OVPN_PASSWD_AUTH: "true"
     cap_add:
       - NET_ADMIN
     ports:
       - 7777:1194 # for openvpn
       - 8080:8080 # for ovpn-admin because of network_mode
+      - 2376:2376
     volumes:
       - ./easyrsa_master:/etc/openvpn/easyrsa
       - ./ccd_master:/etc/openvpn/ccd
@@ -30,7 +32,20 @@ services:
       EASYRSA_PATH: "/mnt/easyrsa"
       OVPN_SERVER: "127.0.0.1:7777:tcp"
       OVPN_INDEX_PATH: "/mnt/easyrsa/pki/index.txt"
+      OVPN_AUTH: "True"
+      OVPN_AUTH_DB_PATH: "/mnt/easyrsa/pki/users.db"
+      OVPN_LISTEN_HOST: "127.0.0.1"
     network_mode: service:openvpn
     volumes:
       - ./easyrsa_master:/mnt/easyrsa
       - ./ccd_master:/mnt/ccd
+  admin-listener:
+    build:
+      context: .
+      dockerfile: Dockerfile.admin-listener
+    image: admin-listener:local
+    network_mode: service:openvpn
+    volumes:
+      - ./easyrsa_master:/mnt/easyrsa
+      - ./proxy.conf:/etc/nginx/conf.d/proxy.conf
+
